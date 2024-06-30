@@ -2,7 +2,6 @@ package trojan
 
 import (
 	"context"
-	fmt "fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -200,10 +199,9 @@ func (s *Server) Process(ctx context.Context, network net.Network, conn stat.Con
 	}
 
 	remoteAddr, _, _ := net.SplitHostPort(conn.RemoteAddr().String())
-	if extra.LenUser(user.Email) > 3 {
+	if extra.LenUser(user.Email) > 5 {
 		return newError("too much connected users")
 	}
-	fmt.Println(extra.LenUser(user.Email))
 	extra.AddConnection(user.Email, remoteAddr)
 	defer extra.RemoveIP(remoteAddr)
 

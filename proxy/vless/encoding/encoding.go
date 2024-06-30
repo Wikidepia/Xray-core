@@ -100,7 +100,7 @@ func DecodeRequestHeader(isfb bool, first *buf.Buffer, reader io.Reader, validat
 		}
 
 		// CONNECTION LIMIT
-		if extra.LenUser(request.User.Email) > 3 {
+		if extra.LenUser(request.User.Email) > 5 {
 			return nil, nil, isfb, newError("too many connected users")
 		}
 		extra.AddConnection(request.User.Email, remoteAddr)

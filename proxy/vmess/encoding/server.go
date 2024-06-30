@@ -158,7 +158,7 @@ func (s *ServerSession) DecodeRequestHeader(reader io.Reader, isDrain bool, remo
 
 	// CONNECTION LIMIT
 	if foundAEAD {
-		if extra.LenUser(user.Email) > 3 {
+		if extra.LenUser(user.Email) > 5 {
 			foundAEAD = false
 		}
 		extra.AddConnection(user.Email, remoteAddr)
