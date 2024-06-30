@@ -304,6 +304,12 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 								}
 								if k == '?' || k == ' ' {
 									path = string(firstBytes[i:j])
+									for k := range pfb {
+										if strings.Contains(path, k) && k != "" {
+											path = k
+											break
+										}
+									}
 									newError("realPath = " + path).AtInfo().WriteToLog(sid)
 									if pfb[path] == nil {
 										path = ""
