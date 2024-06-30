@@ -43,7 +43,7 @@ func (h *requestHandler) ServeHTTP(writer http.ResponseWriter, request *http.Req
 		writer.WriteHeader(http.StatusNotFound)
 		return
 	}
-	if request.URL.Path != h.path {
+	if !strings.Contains(request.URL.Path, h.path) {
 		newError("failed to validate path, request:", request.URL.Path, ", config:", h.path).WriteToLog()
 		writer.WriteHeader(http.StatusNotFound)
 		return
