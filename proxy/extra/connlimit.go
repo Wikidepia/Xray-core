@@ -2,6 +2,7 @@ package extra
 
 import (
 	"sync"
+	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
 )
@@ -11,6 +12,17 @@ var connLimitLock sync.RWMutex
 
 func init() {
 	connLimitSet = make(map[string]mapset.Set[string])
+	go func() {
+		// Clear expired connections every minute
+		for {
+			time.Sleep(time.Minute)
+			connLimitLock.Lock()
+			for _, v := range connLimitSet {
+				v.Clear()
+			}
+			connLimitLock.Unlock()
+		}
+	}()
 }
 
 func AddConnection(user string, source string) {
