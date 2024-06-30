@@ -109,9 +109,9 @@ func (a *AuthIDDecoderHolder) Match(authID [16]byte) (interface{}, error) {
 			continue
 		}
 
-		if !a.filter.Check(authID[:]) {
-			return nil, ErrReplay
-		}
+		// if !a.filter.Check(authID[:]) {
+		// 	return nil, ErrReplay
+		// }
 
 		return v.ticket, nil
 	}
