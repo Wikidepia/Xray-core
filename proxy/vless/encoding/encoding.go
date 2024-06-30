@@ -15,6 +15,7 @@ import (
 	"github.com/xtls/xray-core/common/signal"
 	"github.com/xtls/xray-core/features/stats"
 	"github.com/xtls/xray-core/proxy"
+	"github.com/xtls/xray-core/proxy/extra"
 	"github.com/xtls/xray-core/proxy/vless"
 )
 
@@ -64,7 +65,7 @@ func EncodeRequestHeader(writer io.Writer, request *protocol.RequestHeader, requ
 }
 
 // DecodeRequestHeader decodes and returns (if successful) a RequestHeader from an input stream.
-func DecodeRequestHeader(isfb bool, first *buf.Buffer, reader io.Reader, validator *vless.Validator) (*protocol.RequestHeader, *Addons, bool, error) {
+func DecodeRequestHeader(isfb bool, first *buf.Buffer, reader io.Reader, validator *vless.Validator, remoteAddr string) (*protocol.RequestHeader, *Addons, bool, error) {
 	buffer := buf.StackNew()
 	defer buffer.Release()
 
@@ -97,6 +98,12 @@ func DecodeRequestHeader(isfb bool, first *buf.Buffer, reader io.Reader, validat
 		if request.User = validator.Get(id); request.User == nil {
 			return nil, nil, isfb, newError("invalid request user id")
 		}
+
+		// CONNECTION LIMIT
+		if extra.LenUser(request.User.Email) > 3 {
+			return nil, nil, isfb, newError("too many connected users")
+		}
+		extra.AddConnection(request.User.Email, remoteAddr)
 
 		if isfb {
 			first.Advance(17)

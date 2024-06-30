@@ -29,6 +29,7 @@ import (
 	"github.com/xtls/xray-core/features/policy"
 	"github.com/xtls/xray-core/features/routing"
 	"github.com/xtls/xray-core/proxy"
+	"github.com/xtls/xray-core/proxy/extra"
 	"github.com/xtls/xray-core/proxy/vless"
 	"github.com/xtls/xray-core/proxy/vless/encoding"
 	"github.com/xtls/xray-core/transport/internet/reality"
@@ -206,11 +207,17 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 	napfb := h.fallbacks
 	isfb := napfb != nil
 
+	remoteAddr, _, err := net.SplitHostPort(connection.RemoteAddr().String())
+	if err != nil {
+		return newError("failed to split host port").Base(err).AtWarning()
+	}
+
 	if isfb && firstLen < 18 {
 		err = newError("fallback directly")
 	} else {
-		request, requestAddons, isfb, err = encoding.DecodeRequestHeader(isfb, first, reader, h.validator)
+		request, requestAddons, isfb, err = encoding.DecodeRequestHeader(isfb, first, reader, h.validator, remoteAddr)
 	}
+	defer extra.RemoveIP(remoteAddr)
 
 	if err != nil {
 		if isfb {

@@ -19,6 +19,7 @@ import (
 	"github.com/xtls/xray-core/common/net"
 	"github.com/xtls/xray-core/common/protocol"
 	"github.com/xtls/xray-core/common/task"
+	"github.com/xtls/xray-core/proxy/extra"
 	"github.com/xtls/xray-core/proxy/vmess"
 	vmessaead "github.com/xtls/xray-core/proxy/vmess/aead"
 	"golang.org/x/crypto/chacha20poly1305"
@@ -125,7 +126,7 @@ func parseSecurityType(b byte) protocol.SecurityType {
 }
 
 // DecodeRequestHeader decodes and returns (if successful) a RequestHeader from an input stream.
-func (s *ServerSession) DecodeRequestHeader(reader io.Reader, isDrain bool) (*protocol.RequestHeader, error) {
+func (s *ServerSession) DecodeRequestHeader(reader io.Reader, isDrain bool, remoteAddr string) (*protocol.RequestHeader, error) {
 	buffer := buf.New()
 
 	drainer, err := drain.NewBehaviorSeedLimitedDrainer(int64(s.userValidator.GetBehaviorSeed()), 16+38, 3266, 64)
@@ -154,6 +155,14 @@ func (s *ServerSession) DecodeRequestHeader(reader io.Reader, isDrain bool) (*pr
 	var vmessAccount *vmess.MemoryAccount
 
 	user, foundAEAD, errorAEAD := s.userValidator.GetAEAD(buffer.Bytes())
+
+	// CONNECTION LIMIT
+	if foundAEAD {
+		if extra.LenUser(user.Email) > 3 {
+			foundAEAD = false
+		}
+		extra.AddConnection(user.Email, remoteAddr)
+	}
 
 	var fixedSizeAuthID [16]byte
 	copy(fixedSizeAuthID[:], buffer.Bytes())

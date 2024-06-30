@@ -23,6 +23,7 @@ import (
 	feature_inbound "github.com/xtls/xray-core/features/inbound"
 	"github.com/xtls/xray-core/features/policy"
 	"github.com/xtls/xray-core/features/routing"
+	"github.com/xtls/xray-core/proxy/extra"
 	"github.com/xtls/xray-core/proxy/vmess"
 	"github.com/xtls/xray-core/proxy/vmess/encoding"
 	"github.com/xtls/xray-core/transport/internet/stat"
@@ -223,9 +224,15 @@ func (h *Handler) Process(ctx context.Context, network net.Network, connection s
 		_, isDrain = iConn.(*net.UnixConn)
 	}
 
+	remoteAddr, _, err := net.SplitHostPort(connection.RemoteAddr().String())
+	if err != nil {
+		return newError("failed to split host port").Base(err).AtWarning()
+	}
+
 	reader := &buf.BufferedReader{Reader: buf.NewReader(connection)}
 	svrSession := encoding.NewServerSession(h.clients, h.sessionHistory)
-	request, err := svrSession.DecodeRequestHeader(reader, isDrain)
+	request, err := svrSession.DecodeRequestHeader(reader, isDrain, remoteAddr)
+	defer extra.RemoveIP(remoteAddr)
 	if err != nil {
 		if errors.Cause(err) != io.EOF {
 			log.Record(&log.AccessMessage{

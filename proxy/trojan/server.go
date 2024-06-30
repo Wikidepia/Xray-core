@@ -2,6 +2,7 @@ package trojan
 
 import (
 	"context"
+	fmt "fmt"
 	"io"
 	"strconv"
 	"strings"
@@ -21,6 +22,7 @@ import (
 	"github.com/xtls/xray-core/core"
 	"github.com/xtls/xray-core/features/policy"
 	"github.com/xtls/xray-core/features/routing"
+	"github.com/xtls/xray-core/proxy/extra"
 	"github.com/xtls/xray-core/transport/internet/reality"
 	"github.com/xtls/xray-core/transport/internet/stat"
 	"github.com/xtls/xray-core/transport/internet/tls"
@@ -196,6 +198,14 @@ func (s *Server) Process(ctx context.Context, network net.Network, conn stat.Con
 	} else if shouldFallback {
 		return newError("invalid protocol or invalid user")
 	}
+
+	remoteAddr, _, _ := net.SplitHostPort(conn.RemoteAddr().String())
+	if extra.LenUser(user.Email) > 3 {
+		return newError("too much connected users")
+	}
+	fmt.Println(extra.LenUser(user.Email))
+	extra.AddConnection(user.Email, remoteAddr)
+	defer extra.RemoveIP(remoteAddr)
 
 	clientReader := &ConnReader{Reader: bufferedReader}
 	if err := clientReader.ParseHeader(); err != nil {
