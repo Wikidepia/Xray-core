@@ -20,3 +20,9 @@ openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 \
 
 sudo cp $PWD/xray.service /etc/systemd/system
 sudo systemctl daemon-reload
+sudo systemctl enable xray
+sudo systemctl start xray
+
+sudo cp $PWD/nginx.default /etc/nginx/sites-available/default
+sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+sudo systemctl restart nginx
