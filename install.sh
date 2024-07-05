@@ -2,6 +2,10 @@
 
 set -e -o pipefail
 
+wget https://go.dev/dl/go1.22.5.linux-amd64.tar.gz -O /tmp/go.tar.gz
+tar -C /usr/local -xzf /tmp/go.tar.gz
+rm /tmp/go.tar.gz
+
 if [ -d /usr/local/go ]; then
   export PATH="$PATH:/usr/local/go/bin"
 fi
