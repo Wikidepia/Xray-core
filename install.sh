@@ -14,5 +14,9 @@ CGO_ENABLED=1 go build -o /usr/bin/xray -trimpath -ldflags "-s -w -buildid=" ./m
 
 sudo mkdir -p /etc/xray
 sudo cp $PWD/config.json /etc/xray
+openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 \
+  -nodes -keyout /etc/xray/key.pem -out /etc/xray/cert.pem -subj "/CN=example.com" \
+  -addext "subjectAltName=DNS:example.com,DNS:*.example.com,IP:10.0.0.1"
+
 sudo cp $PWD/xray.service /etc/systemd/system
 sudo systemctl daemon-reload
