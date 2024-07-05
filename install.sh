@@ -23,6 +23,10 @@ sudo systemctl daemon-reload
 sudo systemctl enable xray
 sudo systemctl start xray
 
+if ! command -v nginx &> /dev/null; then
+  echo "nginx is not installed. Failed."
+  exit 1
+fi
 sudo cp $PWD/nginx.default /etc/nginx/sites-available/default
 sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 sudo systemctl restart nginx
